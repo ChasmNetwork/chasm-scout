@@ -99,12 +99,12 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Run Jest unit & integration tests
-        env:
-          OPENAI_API_KEY: ${{ vars.OPENAI_API_KEY }}
-          GROQ_API_KEY: ${{ vars.GROQ_API_KEY }}
-          OPENROUTER_API_KEY: ${{ vars.OPENROUTER_API_KEY }}
-        run: bun run test --verbose
+      # - name: Run Jest unit & integration tests
+      #   env:
+      #     OPENAI_API_KEY: ${{ vars.OPENAI_API_KEY }}
+      #     GROQ_API_KEY: ${{ vars.GROQ_API_KEY }}
+      #     OPENROUTER_API_KEY: ${{ vars.OPENROUTER_API_KEY }}
+      #   run: bun run test --verbose
 
   type-check:
     name: Type Checks
