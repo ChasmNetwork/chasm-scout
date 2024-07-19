@@ -23,16 +23,16 @@
 nano .env
 ```
 
-2. Pull the docker images from https://hub.docker.com/r/johnsonchasm/chasm-scout
+2. Pull the docker images from https://hub.docker.com/r/chasmtech/chasm-scout
 
 ```sh
-docker pull johnsonchasm/chasm-scout:latest
+docker pull chasmtech/chasm-scout:latest
 ```
 
 3. Run the file
 
 ```sh
-docker run -d --restart=always --env-file ./.env -p 3001:3001 --name scout johnsonchasm/chasm-scout
+docker run -d --restart=always --env-file ./.env -p 3001:3001 --name scout chasmtech/chasm-scout
 ```
 
 # Run docker from codebase

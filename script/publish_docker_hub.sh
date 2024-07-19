@@ -24,4 +24,4 @@ fi
 
 
 # Confirm
-docker buildx build --platform linux/amd64,linux/arm64 -t johnsonchasm/chasm-scout:$VERSION -t johnsonchasm/chasm-scout:latest --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t chasmtech/chasm-scout:$VERSION -t chasmtech/chasm-scout:latest --push .
