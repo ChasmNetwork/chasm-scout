@@ -1,0 +1,31 @@
+# IDE
+.idea/
+.vscode/
+
+# Dependencies
+node_modules/
+dist/
+coverage
+package.json
+
+# Docker Configs
+docker-compose.yml
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Environment Files
+.env
+
+# Configuration Files
+tsconfig.json
+.eslintrc.json
+.prettierrc.json
+.lintstagedrc.json
+
+# GitHub Actions
+.github/
+
+# Logs
+*.log

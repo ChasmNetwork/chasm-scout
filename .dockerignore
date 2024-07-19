@@ -1,0 +1,25 @@
+# IDE
+.idea
+.vscode
+
+# Build
+node_modules/
+dist/
+coverage
+
+# Environment Files
+.env
+
+# Configuration Files
+Dockerfile
+.dockerignore
+.git
+.gitignore
+
+# Logs
+npm-debug.log
+
+# Documentation
+README.md
+
+

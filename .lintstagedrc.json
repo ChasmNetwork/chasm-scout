@@ -1,0 +1,9 @@
+{
+  "*.ts": [
+    "bun run prettier:fix",
+    "bun run lint"
+  ],
+  "*.md": [
+    "bun run prettier:fix"
+  ]
+}
