@@ -59,7 +59,7 @@ const apiKeyValidator = (type: string, providers: LLMProvider[]) =>
   });
 
 const PROVIDERS = process.env.PROVIDERS?.split(",") as LLMProvider[];
-const handshakeProtocol = process.env.NODE_ENV !== "production" ? "ws" : "wss";
+const handshakeProtocol = process.env.NODE_ENV !== "local" ? "wss" : "ws";
 
 // Validate and clean environment variables
 export const env = cleanEnv(process.env, {
