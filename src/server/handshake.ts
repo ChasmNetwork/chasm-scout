@@ -22,16 +22,16 @@ export async function handshake() {
     throw new Error("Please set the ORCHESTRATOR_URL environment variable");
   }
 
-  logger.debug("Connecting to orchestrator at " + ORCHESTRATOR_URL);
+  const orchestrator = `${HANDSHAKE_PROTOCOL}://${ORCHESTRATOR_URL.split("//")[1]}?uid=${SCOUT_UID}`;
 
-  const ws = new WebSocket(
-    `${HANDSHAKE_PROTOCOL}://${ORCHESTRATOR_URL.split("//")[1]}?uid=${SCOUT_UID}`,
-    {
-      headers: {
-        Authorization: `Bearer ${WEBHOOK_API_KEY}`,
-      },
+  logger.debug("Connecting to orchestrator at " + orchestrator);
+  logger.debug("Your webhook URL: " + WEBHOOK_URL);
+
+  const ws = new WebSocket(orchestrator, {
+    headers: {
+      Authorization: `Bearer ${WEBHOOK_API_KEY}`,
     },
-  );
+  });
 
   ws.on("open", function open() {
     logger.debug("Initiated WS handshake");
