@@ -6,7 +6,7 @@ LLM_API_KEY=ollama
 MODELS=llama3.1:8b,qwen:4b,mistral:7b
 SIMULATION_MODEL=llama3.1:8b
 ORCHESTRATOR_URL=https://orchestrator.chasm.net
-WEBHOOK_API_KEY=WlRFN20pc1IpMmlwZ2hBXk9ec1JWNkpzSzJjI2EqNHc
+WEBHOOK_API_KEY=
 MIN_CONFIDENCE_SCORE=0.5
 ```
 
