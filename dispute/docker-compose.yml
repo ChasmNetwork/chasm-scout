@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  app:
+    network_mode: "host"
+    build:
+      context: .
+      args:
+        LLM_API_KEY: ${LLM_API_KEY}
+    env_file:
+      - .env
+    ports:
+      - "11434:11434"
+    environment:
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_BASE_URL=${LLM_BASE_URL}
+      - MODELS=${MODELS}
+      - SIMULATION_MODEL=${SIMULATION_MODEL}
+    command: python3 main.py
