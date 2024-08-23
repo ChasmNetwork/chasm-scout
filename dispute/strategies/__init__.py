@@ -1,9 +1,12 @@
+from typing import List
+from util.chasm import Message
 
 
 if __name__ == "__main__":
     import sys
     import os
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
     os.environ["LOG_LEVEL"] = "DEBUG"
 
@@ -15,13 +18,13 @@ if __name__ == "__main__":
 
     from config import MODELS, SIMULATION_MODEL
 
-    input = "What is the capital of France?"
+    input: List[Message] = [
+        {"role": "user", "content": "What is the capital of France?"}
+    ]
     output = "Paris"
 
     # LLM Quality
-    lq = LLMQualityStrategy(
-        models=MODELS
-    )
+    lq = LLMQualityStrategy(models=MODELS)
     lq_result = asyncio.run(lq.analyze(input, output))
     print("LLM Quality: ", lq_result)
 
@@ -32,13 +35,12 @@ if __name__ == "__main__":
 
     # Semantic Similarity
     ss = SemanticSimilarityAnalysis()
-    ss_result = asyncio.run(ss.analyze(input, output))
+    text_input = map(lambda x: x["content"], input)
+    text_input = "\n".join(text_input)
+    ss_result = asyncio.run(ss.analyze(text_input, output))
     print("Semantic Similarity:", ss_result)
 
     # Static Text Analysis
     sta = StaticTextAnalysisStrategy()
     sta_result = sta.analyze(output)
     print("Static Text Analysis:", sta_result)
-
-
-
