@@ -1,5 +1,4 @@
 from typing import List
-from util.chasm import Message
 
 
 if __name__ == "__main__":
@@ -14,7 +13,9 @@ if __name__ == "__main__":
     from LLMQuality import LLMQualityStrategy
     from ResponseSimilarity import ResponseSimilarityAnalysis
     from SemanticSimilarity import SemanticSimilarityAnalysis
+    from ResponseRecompute import ResponseRecomputeAnalysis
     from StaticTextAnalysis import StaticTextAnalysisStrategy
+    from util.chasm import Message
 
     from config import MODELS, SIMULATION_MODEL
 
@@ -44,3 +45,8 @@ if __name__ == "__main__":
     sta = StaticTextAnalysisStrategy()
     sta_result = sta.analyze(output)
     print("Static Text Analysis:", sta_result)
+
+    # Response Recompute Analysis
+    rra = ResponseRecomputeAnalysis(model=SIMULATION_MODEL)
+    rra_result = asyncio.run(rra.analyse(input, output, 42, "groq"))
+    print("Response Recompute Analysis:", rra_result)
