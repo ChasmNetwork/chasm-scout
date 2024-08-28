@@ -1,12 +1,14 @@
 import asyncio
-from util.llm import llm
+from util.llm import LLMProviders
 import logging
+
 
 # Panel of LLM Evaluators (PoLL)
 # https://arxiv.org/abs/2306.05685v4
 class PollAlgo:
     def __init__(self, models: list[str] = []):
-        self.llm = llm
+        self.providers = llm_providers = LLMProviders()
+        self.llm = llm_providers["ollama"]
         # Can customize your own PoLL
         self.models = models
 
@@ -23,12 +25,14 @@ class PollAlgo:
     async def _run_completion(self, messages, model_id: int):
         try:
             loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(None, self._sync_run_completion, messages, model_id)
+            result = await loop.run_in_executor(
+                None, self._sync_run_completion, messages, model_id
+            )
             return result
         except Exception as e:
             logging.error(f"Error in _run_completion: {e}")
             return None
-    
+
     def _sync_run_completion(self, messages, model_id: int):
         try:
             llm = self.llm

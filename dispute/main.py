@@ -39,7 +39,13 @@ async def process_histories():
             logging.debug(f"Skipping already processed history: {history['_id']}")
             continue
         output = history["result"]["choices"][0]["message"]["content"]
-        result = await analyze_text(history["messages"], output)
+        result = await analyze_text(
+            history["messages"],
+            output,
+            history["seed"],
+            history["result"]["scout"]["provider"],
+            history["result"]["scout"]["model"],
+        )
         logging.debug(f"Result: {result}")
         logging.debug(f"Score: {result['confidence_score']}")
 

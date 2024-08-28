@@ -3,12 +3,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import asyncio
 from typing import List, Tuple
-from util.llm import llm
+from util.llm import LLMProviders
 
 
 class ResponseSimilarityAnalysis:
     def __init__(self, model: str):
         self.model = model
+        self.provider = LLMProviders()
 
     async def analyze(self, input: List[Message], output: str) -> Tuple[float, str]:
         loop = asyncio.get_event_loop()
@@ -18,6 +19,7 @@ class ResponseSimilarityAnalysis:
         return score, output
 
     def _sync_analyse(self, input: List[Message], output: str):
+        llm = self.provider["ollama"]
         simulated_output = llm.chat.completions.create(
             messages=input,
             model=self.model,

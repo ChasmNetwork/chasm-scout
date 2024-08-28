@@ -1,11 +1,20 @@
 from datetime import datetime
 from typing import List, Optional, TypedDict
 import logging
-from config import MIN_CONFIDENCE_SCORE, SIMULATION_MODEL, MODELS
+
+from config import (
+    GROQ_API_KEY,
+    MIN_CONFIDENCE_SCORE,
+    MIN_RESPONSE_DIFFERENCE,
+    OPENROUTER_API_KEY,
+    SIMULATION_MODEL,
+    MODELS,
+)
 from util.chasm import Message
 from strategies.ResponseSimilarity import ResponseSimilarityAnalysis
 from strategies.LLMQuality import LLMQualityStrategy
 from strategies.StaticTextAnalysis import StaticTextAnalysisStrategy
+from strategies.ResponseRecompute import ResponseRecomputeAnalysis
 
 
 class TextAnalysisResult(TypedDict):
@@ -17,7 +26,13 @@ class TextAnalysisResult(TypedDict):
     rs_output: Optional[str]
 
 
-async def analyze_text(input: List[Message], output: str) -> TextAnalysisResult:
+async def analyze_text(
+    input: List[Message],
+    output: str,
+    seed: int,
+    provider: str,
+    model: str,
+) -> TextAnalysisResult:
     """
     Analyze the given input and output texts to determine scores and dispute status.
 
@@ -62,8 +77,6 @@ async def analyze_text(input: List[Message], output: str) -> TextAnalysisResult:
 
         # 3. Response
         rs_strategy = ResponseSimilarityAnalysis(model=SIMULATION_MODEL)
-
-        # Gather scores concurrently
         rs_result = await rs_strategy.analyze(input, output)
         rs_score, rs_output = rs_result
 
@@ -76,6 +89,25 @@ async def analyze_text(input: List[Message], output: str) -> TextAnalysisResult:
         print(f"Time taken: {time_diff}")
 
         dispute = confidence_score > MIN_CONFIDENCE_SCORE
+
+        recomputable_provider = True if provider in ["groq", "openrouter"] else False
+
+        # Try to recompute the output
+        if GROQ_API_KEY and OPENROUTER_API_KEY and dispute and recomputable_provider:
+            rr_strategy = ResponseRecomputeAnalysis(model=model)
+            print("Dispute detected. Trying to recompute...")
+            recompute_result = await rr_strategy.analyse(input, output, seed, provider)
+            if recompute_result:
+                rs_score, _ = recompute_result
+                if rs_score < MIN_RESPONSE_DIFFERENCE:
+                    return {
+                        "llm_score": llm_score,
+                        "rs_score": rs_score,
+                        "rs_output": rs_output,
+                        "confidence_score": confidence_score,
+                        "dispute": dispute,
+                        "correct": False,
+                    }
 
         return {
             "llm_score": llm_score,
