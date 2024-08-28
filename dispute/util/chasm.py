@@ -3,6 +3,7 @@ from typing import TypedDict, List
 import requests
 from urllib.parse import urljoin
 from config import ORCHESTRATOR_URL, WEBHOOK_API_KEY
+from util.fetch import request_with_backoff
 
 
 class Message(TypedDict):
@@ -47,7 +48,9 @@ class ChasmConnection:
         print(f"Dispute payload: {payload}")
 
         try:
-            response = requests.post(url, json=payload, headers=headers)
+            response = request_with_backoff(
+                lambda: requests.post(url, json=payload, headers=headers)
+            )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as http_err:

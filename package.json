@@ -1,10 +1,10 @@
 {
   "name": "scout",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/server/express.ts",
+    "dev": "nodemon --watch src src/server/express.ts",
     "build": "tsc",
     "prepare": "husky",
     "prettier": "prettier . --check",

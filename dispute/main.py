@@ -7,13 +7,14 @@ import json
 import logging
 
 logging.basicConfig(
-    level=LOG_LEVEL, 
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    level=LOG_LEVEL,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 chasm = ChasmConnection()
 PROCESSED_HISTORIES_FILE = "processed_histories.json"
+
 
 def load_processed_histories():
     if os.path.exists(PROCESSED_HISTORIES_FILE):
@@ -21,10 +22,14 @@ def load_processed_histories():
             return set(json.load(f))
     return set()
 
+
 def save_processed_histories(histories):
     with open(PROCESSED_HISTORIES_FILE, "w") as f:
         json.dump(list(histories), f)
+
+
 processed_histories = load_processed_histories()
+
 
 async def process_histories():
     histories = chasm.get_prompt_history()
@@ -33,26 +38,26 @@ async def process_histories():
         if history["_id"] in processed_histories:
             logging.debug(f"Skipping already processed history: {history['_id']}")
             continue
-        input = map(lambda x: x["content"], history["messages"])
-        input = "\n".join(input)
         output = history["result"]["choices"][0]["message"]["content"]
-        result = await analyze_text(input, output)
+        result = await analyze_text(history["messages"], output)
         logging.debug(f"Result: {result}")
         logging.debug(f"Score: {result['confidence_score']}")
 
         if result["confidence_score"] > MIN_CONFIDENCE_SCORE:
+            rs_output = result.get("rs_output")
+            assert rs_output is not None, "rs_output is not generated"
             response = chasm.file_dispute(
                 history["_id"],
                 history["messages"],
-                history["result"]["choices"][0]["message"],
+                {"role": "assistant", "content": rs_output},
             )
-            logging.info("Dispute filed: ", response)
-        
+            if response is not None:
+                logging.info(f"Dispute filed: {response['result']}")
+
         # Cache history
         processed_histories.add(history["_id"])
         save_processed_histories(processed_histories)
-    
-            
+
 
 async def main():
     while True:

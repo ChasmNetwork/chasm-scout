@@ -1,24 +1,23 @@
-import asyncio
 from datetime import datetime
-from typing import TypedDict
+from typing import List, Optional, TypedDict
 import logging
-from config import SIMULATION_MODEL, MODELS
+from config import MIN_CONFIDENCE_SCORE, SIMULATION_MODEL, MODELS
+from util.chasm import Message
 from strategies.ResponseSimilarity import ResponseSimilarityAnalysis
 from strategies.LLMQuality import LLMQualityStrategy
 from strategies.StaticTextAnalysis import StaticTextAnalysisStrategy
-from strategies.SemanticSimilarity import SemanticSimilarityAnalysis
 
 
 class TextAnalysisResult(TypedDict):
-    ss_score: float
     llm_score: float
     rs_score: float
     confidence_score: float
     correct: bool
     dispute: bool
+    rs_output: Optional[str]
 
 
-async def analyze_text(input: str, output: str) -> TextAnalysisResult:
+async def analyze_text(input: List[Message], output: str) -> TextAnalysisResult:
     """
     Analyze the given input and output texts to determine scores and dispute status.
 
@@ -41,40 +40,47 @@ async def analyze_text(input: str, output: str) -> TextAnalysisResult:
                 "confidence_score": 1.0,
                 "dispute": True,
                 "correct": False,
-                "ss_score": 1.0,
                 "llm_score": 1.0,
+                "rs_output": None,
                 "rs_score": 1.0,
             }
 
-        # 2. Semantic Similarity
-        ss_strategy = SemanticSimilarityAnalysis()
-
-        # 3. LLM Analysis
+        # 2. LLM Analysis
         llm_strategy = LLMQualityStrategy(models=MODELS)
+        llm_score = await llm_strategy.analyze(input, output)
 
-        # 4. Response
+        print(f"LLM Score: {llm_score}")
+        if llm_score > 0.5:
+            return {
+                "confidence_score": 0.0,
+                "dispute": False,
+                "correct": True,
+                "llm_score": llm_score,
+                "rs_output": None,
+                "rs_score": 0.0,
+            }
+
+        # 3. Response
         rs_strategy = ResponseSimilarityAnalysis(model=SIMULATION_MODEL)
 
         # Gather scores concurrently
-        scores = await asyncio.gather(
-            ss_strategy.analyze(input, output),
-            llm_strategy.analyze(input, output),
-            rs_strategy.analyze(input, output),
-        )
-        ss_score, llm_score, rs_score = scores
+        rs_result = await rs_strategy.analyze(input, output)
+        rs_score, rs_output = rs_result
+
+        print(f"RS Score: {rs_score}")
 
         # Final Score Calculation
-        confidence_score = (llm_score * 0.5) + (ss_score * 0.1) + (rs_score * 0.4)
+        confidence_score = (llm_score * 0.5) + (rs_score * 0.5)
 
         time_diff = datetime.now() - start_time
         print(f"Time taken: {time_diff}")
 
-        dispute = confidence_score > 0.5
+        dispute = confidence_score > MIN_CONFIDENCE_SCORE
 
         return {
-            "ss_score": ss_score,
             "llm_score": llm_score,
             "rs_score": rs_score,
+            "rs_output": rs_output,
             "confidence_score": confidence_score,
             "dispute": dispute,
             "correct": not dispute,
@@ -84,9 +90,9 @@ async def analyze_text(input: str, output: str) -> TextAnalysisResult:
         logging.error(f"Error in analyze_text: {e}")
         # Default to no dispute
         return {
-            "ss_score": 0.0,
             "llm_score": 0.0,
             "rs_score": 0.0,
+            "rs_output": None,
             "confidence_score": 0.0,
             "dispute": False,
             "correct": True,
