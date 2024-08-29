@@ -53,12 +53,57 @@ app.get("/", (req, res) => {
   return res.status(200).send("OK");
 });
 
+async function retryWithExponentialBackoff(
+  retries: number,
+  fn: () => Promise<unknown>,
+): Promise<void> {
+  const initialDelay = 1000; // 1s start
+  let delayFactor = 30; // Initial growth factor
+
+  let previousDelay = initialDelay;
+  const delays = [initialDelay];
+
+  for (let attempt = 1; attempt < retries; attempt++) {
+    let currentDelay = previousDelay * delayFactor;
+
+    while (currentDelay <= previousDelay) {
+      delayFactor += 0.5;
+      currentDelay = previousDelay * delayFactor;
+    }
+
+    // 30 mins cap
+    if (currentDelay > 30 * 60 * 1000) {
+      currentDelay = 30 * 60 * 1000;
+    }
+
+    delays.push(currentDelay);
+    previousDelay = currentDelay;
+  }
+
+  logger.info(`Delays: ${delays.map((d) => d / 1000).join(", ")} seconds`);
+
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      await fn();
+      return;
+    } catch (err: any) {
+      logger.error(`Attempt ${attempt + 1} failed: ${err.message}`);
+      if (attempt < retries - 1) {
+        const delay = delays[attempt];
+        logger.info(`Retrying in ${delay / 1000} seconds...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      } else {
+        logger.error("All retry attempts failed. Exiting gracefully.");
+        process.exit(1);
+      }
+    }
+  }
+}
+
 app.listen(PORT, async () => {
   logger.info(`Server running on port ${PORT}`);
-  await handshake().catch((err) => {
-    logger.error(err.message);
-    process.exit(1);
-  });
+  logger.info("Running exponential backoff handshake...");
+  await retryWithExponentialBackoff(6, handshake);
 });
 
 export default app;

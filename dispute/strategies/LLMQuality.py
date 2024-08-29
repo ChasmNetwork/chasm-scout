@@ -1,12 +1,19 @@
 import re
 import logging
+from typing import List
+from util.chasm import Message
 from util.poll import PollAlgo
 from strategies.tokenizer import Tokenizer
 
 
 class LLMQualityStrategy:
-    def __init__(self, models):
+    """
+    LLM Quality Strategy
+    Higher score means the model is more likely to be good.
+    Lower score means the model is more likely to be bad.
+    """
 
+    def __init__(self, models):
         # llama3 tokenizer
         self.tokenizer = Tokenizer()
         self.poll = PollAlgo(models)
@@ -15,8 +22,11 @@ class LLMQualityStrategy:
         encoded_result = self.tokenizer.encode(text, bos=False, eos=False)
         return self.tokenizer.decode(encoded_result[:limit])
 
-    async def analyze(self, input: str, output: str):
-        input = self.format_text_limit(input, 3000)
+    async def analyze(self, input: List[Message], output: str) -> float:
+        text_input = map(lambda x: x["content"], input)
+        text_input = "\n".join(text_input)
+
+        formatted_input = self.format_text_limit(text_input, 3000)
         output = self.format_text_limit(output, 3000)
 
         # Prompt from https://arxiv.org/abs/2306.05685v4
@@ -48,7 +58,10 @@ Answer: Franciscan Clarist Order
 """,
                 },
                 {"role": "assistant", "content": "False"},
-                {"role": "user", "content": f"Question: {input}\nAnswer: {output}"},
+                {
+                    "role": "user",
+                    "content": f"Question: {formatted_input}\nAnswer: {output}",
+                },
             ],
         )
         logging.debug(results)
@@ -73,4 +86,4 @@ Answer: Franciscan Clarist Order
                 llm_results.append(0.5)
         logging.debug(f"LLM Results: {llm_results}")
         score = sum(llm_results) / len(llm_results)
-        return score
+        return 1 - score
