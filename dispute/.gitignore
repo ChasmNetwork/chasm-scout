@@ -1,3 +1,4 @@
 venv
 __pycache__
 processed_histories.json
+processed_histories_chromia.json
