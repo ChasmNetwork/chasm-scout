@@ -16,7 +16,7 @@ describe("Groq Tests", (): void => {
   const model: string = getModelName(provider, env.MODEL);
 
   const payload = {
-    temperature: 0.7,
+    temperature: 0.1,
     messages: [
       {
         role: "system",
@@ -24,7 +24,7 @@ describe("Groq Tests", (): void => {
       },
       {
         role: "user",
-        content: "What is the sum of 1 and 2?",
+        content: "What is 1 + 2 = ",
       },
     ],
   } as unknown as Request;
@@ -39,8 +39,6 @@ describe("Groq Tests", (): void => {
     const content = (response as OpenAI.Chat.Completions.ChatCompletion)
       .choices[0].message.content as string;
 
-    await expect(content).toSatisfyStatement(
-      "It contains an answer to the sum of 1 and 2.",
-    );
+    await expect(content).toSatisfyStatement("It contains an answer to 1 + 2");
   });
 });

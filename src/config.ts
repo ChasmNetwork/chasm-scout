@@ -6,6 +6,7 @@ import { LLMProvider } from "./utils/llm";
 
 process.env.OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 process.env.OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
+process.env.VLLM_URL = process.env.VLLM_URL || "";
 
 // Validator for LLM providers
 const providersValidator = makeValidator((x) => {
@@ -68,6 +69,7 @@ export const env = cleanEnv(process.env, {
   }),
   LOGGER_LEVEL: str({ choices: ["debug", "info", "warn", "error", "fatal"] }),
   ORCHESTRATOR_URL: url(),
+  VLLM_URL: url(),
   SCOUT_NAME: str(),
   SCOUT_UID: num(),
   WEBHOOK_API_KEY: str(),

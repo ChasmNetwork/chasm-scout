@@ -6,7 +6,11 @@ import { logger } from "../utils/logger";
 export abstract class OpenAIBase {
   protected openai: OpenAI;
 
-  constructor(apiKey: string, baseURL?: string) {
+  constructor(
+    apiKey: string,
+    baseURL?: string,
+    protected logProbs = false,
+  ) {
     this.openai = new OpenAI({
       apiKey: apiKey,
       baseURL: baseURL,
@@ -29,6 +33,7 @@ export abstract class OpenAIBase {
         return stream;
       } else {
         let accumulatedData = "";
+        let accumulatedLogProbs: any[] = [];
         let completion: OpenAI.Chat.Completions.ChatCompletion | null = null;
         const usage = {
           prompt_tokens: 0,
@@ -38,6 +43,8 @@ export abstract class OpenAIBase {
 
         for await (const chunk of stream) {
           accumulatedData += chunk.choices[0].delta.content || "";
+          if (this.logProbs)
+            accumulatedLogProbs.push(chunk.choices[0].logprobs);
           completion = chunk as any;
           usage.completion_tokens += 1;
         }
@@ -54,7 +61,11 @@ export abstract class OpenAIBase {
                 content: accumulatedData,
               },
               finish_reason: "stop",
-              logprobs: null,
+              logprobs: this.logProbs
+                ? {
+                    content: accumulatedLogProbs,
+                  }
+                : null,
             },
           ],
         };
