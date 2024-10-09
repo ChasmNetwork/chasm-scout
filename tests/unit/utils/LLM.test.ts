@@ -2,6 +2,7 @@ import { groqQuery } from "../../../src/integration/groq";
 import { ollamaQuery } from "../../../src/integration/ollama";
 import { openAiQuery } from "../../../src/integration/openai";
 import { openRouterQuery } from "../../../src/integration/openrouter";
+import { vllmQuery } from "../../../src/integration/vllm";
 import { getLlmQuery, getModelName, LLMProvider } from "../../../src/utils/llm";
 
 describe("Utility: LLM Tests", (): void => {
@@ -16,6 +17,7 @@ describe("Utility: LLM Tests", (): void => {
     expect(getLlmQuery(LLMProvider.OPENAI)).toBe(openAiQuery);
     expect(getLlmQuery(LLMProvider.OPENROUTER)).toBe(openRouterQuery);
     expect(getLlmQuery(LLMProvider.OLLAMA)).toBe(ollamaQuery);
+    expect(getLlmQuery(LLMProvider.VLLM)).toBe(vllmQuery);
   });
 
   it("should throw error for unknown provider", (): void => {
@@ -42,6 +44,9 @@ describe("Utility: LLM Tests", (): void => {
     expect(getModelName(LLMProvider.GROQ, "gemma-7b-it")).toBe("gemma-7b-it");
     expect(getModelName(LLMProvider.OPENROUTER, "gemma-7b-it")).toBe(
       "google/gemma-7b-it",
+    );
+    expect(getModelName(LLMProvider.VLLM, "gemma2-9b-it")).toBe(
+      "google/gemma-2-9b-it",
     );
     expect(getModelName(LLMProvider.OLLAMA, "gemma-7b-it")).toBe("gemma:7b");
     expect(getModelName(LLMProvider.OPENAI, "gpt-3.5-turbo")).toBe(

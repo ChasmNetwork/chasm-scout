@@ -2,6 +2,7 @@ import { groqQuery } from "../integration/groq";
 import { ollamaQuery } from "../integration/ollama";
 import { openAiQuery } from "../integration/openai";
 import { openRouterQuery } from "../integration/openrouter";
+import { vllmQuery } from "../integration/vllm";
 import { logger } from "./logger";
 
 export enum LLMProvider {
@@ -9,6 +10,7 @@ export enum LLMProvider {
   OPENAI = "openai",
   OPENROUTER = "openrouter",
   OLLAMA = "ollama",
+  VLLM = "vllm",
 }
 
 export type QueryFunction =
@@ -22,6 +24,7 @@ export const getLlmQuery = (provider: LLMProvider): QueryFunction => {
     [LLMProvider.OPENAI]: openAiQuery,
     [LLMProvider.OPENROUTER]: openRouterQuery,
     [LLMProvider.OLLAMA]: ollamaQuery,
+    [LLMProvider.VLLM]: vllmQuery,
   };
 
   return queryFunctions[provider];
@@ -33,6 +36,7 @@ export const getModelName = (provider: LLMProvider, model: string): string => {
       [LLMProvider.GROQ]: "gemma2-9b-it",
       [LLMProvider.OPENROUTER]: "google/gemma-2-9b-it",
       [LLMProvider.OLLAMA]: "gemma2:9b",
+      [LLMProvider.VLLM]: "google/gemma-2-9b-it",
     },
     "gemma-7b-it": {
       [LLMProvider.GROQ]: "gemma-7b-it",
